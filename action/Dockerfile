@@ -18,5 +18,5 @@ RUN apt-get update \
     && apt-get install -y powershell
 
 # actions starting point
-ADD *.ps1 /*
+COPY *.ps1 /*
 ENTRYPOINT ["pwsh", "/entrypoint.ps1"]
