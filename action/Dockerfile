@@ -18,5 +18,6 @@ RUN apt-get update \
     && apt-get install -y powershell
 
 # actions starting point
-COPY *.ps1 /*
+ADD entrypoint.ps1 /entrypoint.ps1
+ADD github-calls.ps1 /github-calls.ps1
 ENTRYPOINT ["pwsh", "/entrypoint.ps1"]
