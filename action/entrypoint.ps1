@@ -8,6 +8,9 @@ Write-Host "Repo slug from PowerShell: $($env:GITHUB_REPOSITORY)"
 # include local library code
 . $PSScriptRoot\github-calls.ps1
 
+# log env vars
+Write-Host "Logging env vars:"
+(gci env:*).GetEnumerator() | Sort-Object Name | Out-String | Write-Host
 
 # create a new issue with the date as the key
 $repoInfo = ""
