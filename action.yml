@@ -7,3 +7,7 @@ branding:
 runs:
   using: 'docker'
   image: 'action/Dockerfile'
+inputs:
+ github_token: 
+   description: 'GitHub token to use for creating and interacting with the issues api'
+   required: true

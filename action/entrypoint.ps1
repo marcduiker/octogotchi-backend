@@ -14,7 +14,7 @@ $repoInfo = ""
 $issuesRepositoryName = $env:GITHUB_REPOSITORY
 $title = "IssueForToday"
 $body = "Issue body"
-$PAT = $env:GITHUB_TOKEN
+$PAT = $env:github_token
 $userName = "***"
 
 Write-Host "Using PAT with length [$($PAT.Length)]"
