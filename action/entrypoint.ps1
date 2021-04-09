@@ -5,4 +5,18 @@ Write-Host "Hello Octogotchi!"
 # curl post/get here, load repo name from param
 Write-Host "Repo slug from PowerShell: $($env:GITHUB_REPOSITORY)"
 
+# include local library code
+. $PSScriptRoot\github-calls.ps1
+
+
+# create a new issue with the date as the key
+$repoInfo = ""
+$issuesRepositoryName = $env:GITHUB_REPOSITORY
+$title = "IssueForToday"
+$body = "Issue body"
+$PAT = $env:GITHUB_TOKEN
+$userName = "***"
+
+CreateNewIssueForRepo -repoInfo $repoInfo -issuesRepositoryName $issuesRepositoryName -title $title -body $body -PAT $PAT -userName $userName
+
 # act on the result
