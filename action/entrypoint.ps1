@@ -17,6 +17,7 @@ $body = "Issue body"
 $PAT = $env:GITHUB_TOKEN
 $userName = "***"
 
+Write-Host "Using PAT with length [$($PAT.Length)]"
 CreateNewIssueForRepo -repoInfo $repoInfo -issuesRepositoryName $issuesRepositoryName -title $title -body $body -PAT $PAT -userName $userName
 
 # act on the result
