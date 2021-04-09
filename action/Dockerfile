@@ -21,3 +21,4 @@ RUN apt-get update \
 ADD entrypoint.ps1 /entrypoint.ps1
 ADD github-calls.ps1 /github-calls.ps1
 ENTRYPOINT ["pwsh", "/entrypoint.ps1"]
+
