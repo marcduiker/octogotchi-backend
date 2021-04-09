@@ -9,6 +9,7 @@ LABEL "com.github.actions.color"="blue"
 #LABEL "homepage"="https://repo.url.dev"
 #LABEL "maintainer"="He there<myname@email.com>"
 
+# install powershell core
 RUN apt-get update \
     && apt-get install wget -y \
     && wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb \
@@ -16,5 +17,6 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y powershell
 
+# actions starting point
 ADD entrypoint.ps1 /entrypoint.ps1
 ENTRYPOINT ["pwsh", "/entrypoint.ps1"]
