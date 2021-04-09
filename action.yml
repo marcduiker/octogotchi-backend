@@ -1,0 +1,9 @@
+# action.yml
+name: 'Octogotchi'
+description: 'Octogotchi'
+branding:
+  icon : alert-circle
+  color: blue
+runs:
+  using: 'docker'
+  image: '/action/Dockerfile'
