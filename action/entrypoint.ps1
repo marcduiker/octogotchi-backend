@@ -2,7 +2,7 @@ Write-Host $PSVersion
 
 Write-Host "Hello Octogotchi!"
 
-# curl post/get here, load repo name from param
+# load repo name from param
 Write-Host "Repo slug from PowerShell: $($env:GITHUB_REPOSITORY)"
 
 # include local library code
@@ -16,18 +16,29 @@ function LogEnvVars {
 
 function Get-IssuePrefix {
     # return the issue prefix for today so we can test if it already exists
-    return "IssueForToday"
+    $ISODATE = (Get-Date -UFormat '+%Y%m%d')
+    return "$ISODATE"
 }
 
 # create a new issue with the date as the key
-$repoInfo = ""
+$repoInfo = "un-used"
 $issuesRepositoryName = $env:GITHUB_REPOSITORY
-$title = Get-IssuePrefix
+$title = "Octogotchi message for today"
+$issuePrefix = Get-IssuePrefix
 $body = "Issue body"
 $PAT = $env:INPUT_GITHUB_TOKEN
 $userName = "***"
 
 Write-Host "Using PAT with length [$($PAT.Length)]"
-CreateNewIssueForRepo -repoInfo $repoInfo -issuesRepositoryName $issuesRepositoryName -title $title -body $body -PAT $PAT -userName $userName
+$issueNumber = CreateNewIssueForRepo -repoInfo $repoInfo -issuesRepositoryName $issuesRepositoryName -title $title -body $body -PAT $PAT -userName $userName -issuePrefix $issuePrefix
+Write-Host "Working with issueId [$issueNumber]"
+
+#curl post/get here
+$url = "https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif"
+$result = Invoke-WebRequest -Uri $url -ErrorAction Stop
 
 # act on the result
+
+# create a new comment with the image in it:
+$message = "Interact with your Octogotchi throughout the day: `r`n ![image of the day]($url)"
+AddCommentToIssue -repoName $issuesRepositoryName -message $message -number $issueNumber -userName $userName -PAT $PAT

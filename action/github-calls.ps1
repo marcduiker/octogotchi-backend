@@ -34,9 +34,14 @@ function CallWebRequest {
     $Headers = Get-Headers -userName $userName -PAT $PAT
 
     try {
-
         $bodyContent = ($body | ConvertTo-Json) -replace '\\', '\'
-        $result = Invoke-WebRequest -Uri $url -Headers $Headers -Method $verbToUse -Body $bodyContent -ErrorAction Stop
+        
+        if ($verbToUse -eq "Get") {
+            $result = Invoke-WebRequest -Uri $url -Headers $Headers -Method $verbToUse -ErrorAction Stop
+        }
+        else {
+            $result = Invoke-WebRequest -Uri $url -Headers $Headers -Method $verbToUse -Body $bodyContent -ErrorAction Stop
+        }
         
         Write-Host "  StatusCode: $($result.StatusCode)"
         Write-Host "  RateLimit-Limit: $($result.Headers["X-RateLimit-Limit"])"
@@ -47,23 +52,32 @@ function CallWebRequest {
         $info = ($result.Content | ConvertFrom-Json)
     }
     catch {
-        Write-Host "Error calling api at [$url]:"
+        Write-Host "Error calling api at [$url] with verb [$verbToUse]:"
         Write-Host "  StatusCode: $($_.Exception.Response.StatusCode)"
-        Write-Host "  RateLimit-Limit: $($_.Exception.Response.Headers.GetValues("X-RateLimit-Limit"))"
-        Write-Host "  RateLimit-Remaining: $($_.Exception.Response.Headers.GetValues("X-RateLimit-Remaining"))"
-        Write-Host "  RateLimit-Reset: $($_.Exception.Response.Headers.GetValues("X-RateLimit-Reset"))"
-        Write-Host "  RateLimit-Used: $($_.Exception.Response.Headers.GetValues("x-ratelimit-used"))"
-
-        $messageData = $_.ErrorDetails.Message | ConvertFrom-Json
-        Write-Host "$($_.ErrorDetails.Message)"
-        if ($messageData.message.StartsWith("API rate limit exceeded")) {
-            Write-Error "Rate limit exceeded. Halting execution"
-            throw
+        Write-Host $_.Exception.Response.Status
+        if ($null -ne $_.Exception.Response.Headers) {
+            Write-Host "  RateLimit-Limit: $($_.Exception.Response.Headers.GetValues("X-RateLimit-Limit"))"
+            Write-Host "  RateLimit-Remaining: $($_.Exception.Response.Headers.GetValues("X-RateLimit-Remaining"))"
+            Write-Host "  RateLimit-Reset: $($_.Exception.Response.Headers.GetValues("X-RateLimit-Reset"))"
+            Write-Host "  RateLimit-Used: $($_.Exception.Response.Headers.GetValues("x-ratelimit-used"))"
+        }
+        else {
+            # attempt to dump the entire exception
+            Write-Host $_.Exception
         }
 
-        if ($messageData.message -eq "Not Found") {
-            Write-Warning "Call to GitHub Api [$url] had [not found] result with documentation url [$($messageData.documentation_url)]"
-            return $messageData.documentation_url
+        if ($null -ne $_.ErrorDetails.Message) {
+            $messageData = $_.ErrorDetails.Message | ConvertFrom-Json
+            Write-Host "$($_.ErrorDetails.Message)"
+            if ($messageData.message.StartsWith("API rate limit exceeded")) {
+                Write-Error "Rate limit exceeded. Halting execution"
+                throw
+            }
+
+            if ($messageData.message -eq "Not Found") {
+                Write-Warning "Call to GitHub Api [$url] had [not found] result with documentation url [$($messageData.documentation_url)]"
+                return $messageData.documentation_url
+            }
         }
         
         Write-Host "$messageData"
@@ -162,18 +176,28 @@ function CreateNewIssueForRepo {
         [string] $title,
         [string] $body,
         [string] $PAT,
-        [string] $userName
+        [string] $userName,
+        [string] $issuePrefix
     )
 
     $url = "https://api.github.com/repos/$issuesRepositoryName/issues"
+    # check if issue with current prefix already exists:
+    $existingIssues = CallWebRequest -url $url -body "" -verbToUse "Get" -PAT $PAT -userName $userName
+    Write-Host "Found [$($existingIssues.Length)] existing issues"
+    $existing = $existingIssues | Where-Object { $_.title.StartsWith($issuePrefix) }
+    if ($null -ne $existing) {
+        Write-Host "Found an existing issue with prefix [$issuePrefix] and id [$($existing.number)]"
+        return $existing.number
+    }
 
     $data = [PSCustomObject]@{
-        title = $title
+        title = "$issuePrefix - $title"
         body = $body
     }
 
     Write-Host "Creating a new issue with title [$title] in repository [$issuesRepositoryName]"
     $result = CallWebRequest -url $url -verbToUse "POST" -body $data -PAT $PAT -userName $userName
 
-    Write-Host "Issue has been created and can be found at this url: ($($result.html_url))"
+    Write-Host "Issue has been created and can be found at this url: ($($result.html_url)) and number [$($result.number)]"
+    return $result.number
 }
