@@ -1,5 +1,7 @@
 {
-    "recommendations": [
-        "editorconfig.editorconfig"
-    ]
+  "recommendations": [
+    "ms-azuretools.vscode-azurefunctions",
+    "ms-dotnettools.csharp",
+    "editorconfig.editorconfig"
+  ]
 }
