@@ -1,5 +1,5 @@
 namespace Octogotchi.FunctionApp
 {
-    public class CreateGitHubIssueActivity
+    public class CloseGitHubIssueActivity
     {}
 }
